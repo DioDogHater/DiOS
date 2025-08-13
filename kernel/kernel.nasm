@@ -15,6 +15,8 @@ kernel_main:
 	mov edi, KDATA(test_string)
 	call kprint_str
 
+	int 2
+
 	ret
 
 test_string:
