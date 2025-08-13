@@ -5,6 +5,10 @@ Also I love coding in assembly and making your own OS with it is the best
 way in my opinion.
 
 # Requirements
-- Linux or MacOS
-- Qemu for system emulation (`qemu-system-x86_64`)
+- Windows, Linux or MacOS
+- Qemu for x86 system emulation (`qemu-system-i386`)
 - The Intel x86 Nasm assembler (`nasm`)
+
+# Credits
+This project was made using the help of 
+https://github.com/cfenollosa/os-tutorial

@@ -1,7 +1,7 @@
 [org 0x7C00]
 
 KERNEL_OFFSET equ 0x1000
-KERNEL_SECTORS equ 46
+KERNEL_SECTORS equ 48
 
 boot_raw:
 	mov bp, 0x8000
@@ -127,7 +127,9 @@ boot_protected_mode:
 	call KERNEL_OFFSET
 
 	; End loop
-	jmp $
+	.end_loop:
+	hlt
+	jmp .end_loop
 
 	.text:
 	db "Booted up in protected mode.",0
@@ -183,4 +185,4 @@ times 510 - ($ - $$) db 0
 ; Magic boot sector number
 dw 0xaa55
 
-%include "kernel/kernel.asm"
+%include "kernel/kernel.nasm"
