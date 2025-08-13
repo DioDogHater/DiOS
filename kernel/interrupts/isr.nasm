@@ -22,7 +22,35 @@ isr_setup:
     ret
 
 isr_handler:
+    ; High contrast to see clearly
+    mov BYTE [KDATA(video_attribute)], LIGHT_RED_FG
+
+    ; Print out the isr's data
+    mov edi, KDATA(.text)
+    call kprint_str
+
+    xor edx, edx
+    mov dl, BYTE [esp+40]
+    call kprint_dec_offset
+
+    mov edi, KDATA(.text2)
+    call kprint_str_offset
+
+    mov dl, BYTE [esp+41]
+    call kprint_dec_offset
+
+    mov bl, 10
+    call kputchar_offset
+
+    ; Reset video attribute
+    mov BYTE [KDATA(video_attribute)], WHITE_ON_BLACK
+
     ret
+
+    .text:
+        db "RECEIVED INT ",0
+    .text2:
+        db " - ERR: ",0
 
 ; array of all isrs
 isr_arr:
@@ -58,6 +86,5 @@ isr_arr:
     dd KDATA(isr29)
     dd KDATA(isr30)
     dd KDATA(isr31)
-    dd 0
 
 %endif

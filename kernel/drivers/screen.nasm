@@ -249,10 +249,12 @@ kprint_hex_offset:
 	ret
 
 kprint_dec:
+	push edx
 	push bx
 	call get_cursor_offset
 	mov ax, bx
 	pop bx
+	pop edx
 	jmp kprint_dec_offset
 
 ; edx - value
@@ -261,6 +263,7 @@ kprint_dec_offset:
 	push edx
 	push ax
 	cmp edx, 0
+	jz .print_zero
 	jge .setup
 	neg edx
 	.setup:
@@ -287,6 +290,12 @@ kprint_dec_offset:
 	.ignore_sign:
 	inc edi
 	jmp kprint_str_offset
+
+	.print_zero:
+	pop ax
+	pop edx
+	mov bl, '0'
+	jmp kputchar_offset
 
 	.buffer:
 		db " 4294967295",0

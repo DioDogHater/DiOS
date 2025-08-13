@@ -11,7 +11,7 @@ build/os-image.bin: boot/boot_sector.nasm kernel/* kernel/drivers/*
 	nasm $< -f bin -o $@
 
 run: build/os-image.bin
-	qemu-system-i386 -d int -no-reboot -fda $<
+	qemu-system-i386 -no-reboot -fda $<
 
 debug: build/os-image.bin
 	qemu-system-i386 -gdb tcp::9000 -S -fda $<

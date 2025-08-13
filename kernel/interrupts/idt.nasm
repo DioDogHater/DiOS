@@ -17,7 +17,7 @@ idt:
 ; idt register
 idt_reg:
     dw IDT_ENTRIES * 8 - 1
-    dd idt
+    dd KDATA(idt)
 
 ; edi - index
 ; eax - handler
@@ -26,27 +26,17 @@ set_idt_gate:
     shl edi, 3 ; index * 8 bytes
     add edi, KDATA(idt)
     mov WORD [edi+idt_gate_t.low_offset], ax
-    mov WORD [edi+idt_gate_t.sel], 0x0008
+    mov WORD [edi+idt_gate_t.sel], CODE_SEG
     mov BYTE [edi+idt_gate_t.always0], 0x00
     mov BYTE [edi+idt_gate_t.flags], 0x8E
     ror eax, 16
     mov WORD [edi+idt_gate_t.high_offset], ax
-    pusha
-    mov edx, [edi]
-    push edi
-    call kprint_hex
-    pop edi
-    add ax, 2
-    mov edx, [edi+4]
-    call kprint_hex_offset
-    mov bl, 10
-    call kputchar_offset
-    popa
     pop edi
     ret
 
 set_idt:
     lidt [KDATA(idt_reg)]
+    sti
     ret
 
 %endif
