@@ -7,7 +7,7 @@ all: run
 
 build: build/os-image.bin
 
-build/os-image.bin: boot/boot_sector.nasm kernel/* kernel/drivers/*
+build/os-image.bin: boot/boot_sector.nasm kernel/* kernel/drivers/* kernel/cpu/*
 	nasm $< -f bin -o $@
 
 run: build/os-image.bin

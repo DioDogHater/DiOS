@@ -127,7 +127,6 @@ boot_protected_mode:
 	call KERNEL_OFFSET
 
 	; End loop
-	cli
 	.end_loop:
 	hlt
 	jmp .end_loop

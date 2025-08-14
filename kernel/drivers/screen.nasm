@@ -53,16 +53,25 @@ REG_SCREEN_DATA equ 0x3D5
 video_attribute:
 	db WHITE_ON_BLACK
 
+cursor_enabled:
+	db 0x01
+
+%define set_video_attribute(x) mov BYTE [KDATA(video_attribute)], (x)
+%define set_video_default set_video_attribute(WHITE_ON_BLACK)
+
+%define enable_cursor mov BYTE [KDATA(cursor_enabled)], 0x01
+%define disable_cursor mov BYTE [KDATA(cursor_enabled)], 0x00
+
 ; dl - x, dh - y
 ; ax - result
 get_screen_offset:
 	mov al, dh
 	mov ah, MAX_COLS
-	mul al
+	mul ah
 	push bx
 	movzx bx, dl
+	add ax, bx
 	pop bx
-	add ax, dx
 	shl ax, 1
 	ret
 
@@ -86,17 +95,11 @@ get_screen_offset_x:
 
 ; bx - offset
 get_cursor_offset:
-	mov dx, REG_SCREEN_CTRL
-	mov al, 14
-	call port_byte_out
-	inc dx
-	call port_byte_in
+	portx_byte_out REG_SCREEN_CTRL, 14
+	portx_byte_in REG_SCREEN_DATA
 	mov bh, al
-	dec dx
-	mov al, 15
-	call port_byte_out
-	inc dx
-	call port_byte_in
+	portx_byte_out REG_SCREEN_CTRL, 15
+	portx_byte_in REG_SCREEN_DATA
 	mov bl, al
 	shl bx, 1
 	ret
@@ -105,18 +108,10 @@ get_cursor_offset:
 set_cursor_offset:
 	pusha
 	shr bx, 1
-	mov dx, REG_SCREEN_CTRL
-	mov al, 14
-	call port_byte_out
-	inc dx
-	mov al, bh
-	call port_byte_out
-	dec dx
-	mov al, 15
-	call port_byte_out
-	inc dx
-	mov al, bl
-	call port_byte_out
+	portx_byte_out REG_SCREEN_CTRL, 14
+	portx_byte_out REG_SCREEN_DATA, bh
+	portx_byte_out REG_SCREEN_CTRL, 15
+	portx_byte_out REG_SCREEN_DATA, bl
 	popa
 	ret
 
@@ -210,8 +205,12 @@ kputchar_offset:
 
 	.move_cusor:
 	push bx
+	mov bl, BYTE [KDATA(cursor_enabled)]
+	test bl, bl
+	jz .skip_cursor_offset
 	mov bx, ax
 	call set_cursor_offset
+	.skip_cursor_offset:
 	pop bx
 
 	ret

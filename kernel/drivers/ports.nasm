@@ -1,28 +1,44 @@
 %ifndef PORTS_ASM
 %define PORTS_ASM
 
-; dx - port number
-; al - output
-port_byte_in:
+%macro port_byte_in 1
+	in al, %1
+%endmacro
+
+%macro portx_byte_in 1
+	mov dx, %1
 	in al, dx
-	ret
+%endmacro
 
-; dx - port number
-; al - input
-port_byte_out:
+%macro port_byte_out 2
+	mov al, %2
+	out %1, al
+%endmacro
+
+%macro portx_byte_out 2
+	mov dx, %1
+	mov al, %2
 	out dx, al
-	ret
+%endmacro
 
-; dx - port number
-; ax - output
-port_word_in:
+%macro port_word_in 1
+	in ax, %1
+%endmacro
+
+%macro portx_word_in 1
+	mov dx, %1
 	in ax, dx
-	ret
+%endmacro
 
-; dx - port number
-; ax - input
-port_word_out:
-	out dx, ax
-	ret
+%macro port_word_out 2
+	mov ax, %2
+	out %1, al
+%endmacro
+
+%macro portx_word_out 2
+	mov dx, %1
+	mov ax, %2
+	out dx, al
+%endmacro
 
 %endif
