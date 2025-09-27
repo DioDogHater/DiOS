@@ -58,10 +58,12 @@ help_txt:
 db "help",0
 
 help_cmd_txt:
-db "COMMANDS:",10,0
+db 10,"COMMANDS:",10,0
 db "help",0," : displays this menu",0
+db "clear",0," : clears the screen",0
 db "echo <text>",0," : repeats text",0
-db "END",0," : stops the CPU",0,255
+db "END",0," : stops the CPU",0
+db 255
 
 
 kernel_input:
@@ -83,6 +85,7 @@ kernel_input:
 	jnz .dont_help_cmd
 
 	.help_cmd:
+	set_video_attribute(LIGHT_GREEN_FG | BLACK_BG)
 	mov edi, KDATA(help_cmd_txt)
 	call kprint_str
 	inc edi
@@ -99,6 +102,17 @@ kernel_input:
 	call kputchar_offset
 	jmp .help_cmd_loop
 	.dont_help_cmd:
+
+	; Check for "clear" command
+	mov eax, KDATA(.clear_txt)
+	call strcmp_lowercase
+	test bl, bl
+	jnz .dont_clear_cmd
+
+	.clear_cmd:
+	call clear_screen
+	jmp .end
+	.dont_clear_cmd:
 
 	; Check for "echo" command
 	mov eax, KDATA(.echo_txt)
@@ -164,6 +178,9 @@ kernel_input:
 
 	.not_enough_args:
 	db "Not enough args.",0
+
+	.clear_txt:
+	db "clear",0
 
 	.end_txt:
 	db "END",0
