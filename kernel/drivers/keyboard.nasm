@@ -82,6 +82,20 @@ keyboard_callback:
     cmp al, SCANCODE_ENTER
     jne .not_enter
 
+    mov edi, DWORD [KDATA(keybuffer_cursor)]
+    dec edi
+    mov bl, BYTE [KDATA(keybuffer)+edi]
+    cmp bl, '\'
+    jne .dont_char_enter
+    cmp edi, keybuffer_len
+    jge .end
+    mov bl, 10
+    mov BYTE [KDATA(keybuffer)+edi], bl
+    inc edi
+    mov DWORD [KDATA(keybuffer_cursor)], edi
+    call kputchar
+    jmp .end
+    .dont_char_enter:
     call kernel_input
     mov BYTE [KDATA(keybuffer)], 0
     mov DWORD [KDATA(keybuffer_cursor)], 0

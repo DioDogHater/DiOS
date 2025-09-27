@@ -191,6 +191,14 @@ kputchar_offset:
 	jmp .update_cursor
 	.not_newline:
 
+	cmp bl, 9
+	jne .not_tab
+
+	.tab:
+	add ax, 2
+	jmp .update_cursor
+	.not_tab:
+
 	cmp bl, 8
 	jne .normal_char
 
