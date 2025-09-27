@@ -107,17 +107,17 @@ get_cursor_offset:
 
 ; bx - offset
 set_cursor_offset:
-	pusha
+	pushad
 	shr bx, 1
 	portx_byte_out REG_SCREEN_CTRL, 14
 	portx_byte_out REG_SCREEN_DATA, bh
 	portx_byte_out REG_SCREEN_CTRL, 15
 	portx_byte_out REG_SCREEN_DATA, bl
-	popa
+	popad
 	ret
 
 clear_screen:
-	pusha
+	pushad
 	mov eax, VIDEO_MEMORY
 	mov ebx, 0
 	mov dx, 0x0F00
@@ -131,11 +131,11 @@ clear_screen:
 	.end:
 	mov bx, 0
 	call set_cursor_offset
-	popa
+	popad
 	ret
 
 scroll_screen:
-	pusha
+	pushad
 	mov eax, VIDEO_MEMORY
 	mov ebx, 0
 	.loop:
@@ -154,7 +154,7 @@ scroll_screen:
 	inc ebx
 	jmp .loop
 	.end:
-	popa
+	popad
 	sub ax, MAX_COLS * 2
 	ret
 
@@ -195,7 +195,7 @@ kputchar_offset:
 	jne .not_tab
 
 	.tab:
-	add ax, 2
+	add ax, 6
 	jmp .update_cursor
 	.not_tab:
 

@@ -93,7 +93,7 @@ keyboard_callback:
     mov BYTE [KDATA(keybuffer)+edi], bl
     inc edi
     mov DWORD [KDATA(keybuffer_cursor)], edi
-    call kputchar
+    call kernel_update
     jmp .end
     .dont_char_enter:
     call kernel_input
@@ -120,6 +120,7 @@ keyboard_callback:
     disable_cursor
     call kputchar_offset
     enable_cursor
+    call kernel_update
     jmp .end
     .normal_key:
 
@@ -137,8 +138,6 @@ keyboard_callback:
     cmp bl, 7
     je .end
 
-    call kputchar
-
     mov edi, DWORD [KDATA(keybuffer_cursor)]
     cmp edi, keybuffer_len
     jge .end
@@ -147,6 +146,7 @@ keyboard_callback:
     mov BYTE [KDATA(keybuffer)+edi], 0
     mov DWORD [KDATA(keybuffer_cursor)], edi
 
+    call kernel_update
 
     jmp .end
 

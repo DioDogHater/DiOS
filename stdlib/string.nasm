@@ -70,7 +70,7 @@ strlen:
 
 ; edi : str
 reverse_str:
-    pusha
+    pushad
     call strlen
     mov eax, 0
     .loop:
@@ -82,8 +82,9 @@ reverse_str:
     mov BYTE [edi], bh
     inc eax
     dec edx
+    jmp .loop
     .end:
-    popa
+    popad
     ret
 
 ; edi : str
@@ -101,16 +102,23 @@ append_str:
     pop edx
     ret
 
+; Shifts the entire string to the left by one
+; Same effect as deleting the first char
 ; edi : str
-backspace_str:
+shift_str:
+    push ebx
     push edx
     call strlen
+    .loop:
     test edx, edx
     jz .end
+    mov bl, BYTE [edi+edx]
     dec edx
-    mov BYTE [edi+edx], 0
+    mov BYTE [edi+edx], bl
+    jmp .loop
     .end:
     pop edx
+    pop ebx
     ret
 
 ; eax : string a

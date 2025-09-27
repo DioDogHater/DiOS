@@ -11,21 +11,25 @@ kernel_entry:
 
 %include "stdlib/lib.nasm"
 
+TIMER_RESOLUTION equ 1000
+
 kernel_main:
 	call clear_screen
 	call isr_setup
-inc edi
+
 	sti
 
-	mov ebx, 50
+	mov ebx, TIMER_RESOLUTION
 	call init_timer
 
 	call init_keyboard
 
 	mov ax, 0
+	set_video_attribute(LIGHT_BLUE_FG | BLACK_BG)
 	mov edi, KDATA(.welcome_string)
 	call kprint_str_offset
 
+	set_video_default
 	mov edi, KDATA(.shell_intro)
 	call kprint_str_offset
 	push edi
@@ -61,22 +65,43 @@ help_cmd_txt:
 db 10,"COMMANDS:",10,0
 db "help",0," : displays this menu",0
 db "clear",0," : clears the screen",0
+db "time",0," : displays current time",0
 db "echo <text>",0," : repeats text",0
-db "END",0," : stops the CPU",0
+db "END",0," : stops the CPU",10,0
 db 255
 
+input_cursor:
+    dw 0
+
+; Update the input
+kernel_update:
+	pusha
+	mov ax, WORD [KDATA(input_cursor)]
+	mov edi, KDATA(keybuffer)
+	call strlen
+	test edx, edx
+	jnz .not_empty
+	mov bx, ax
+	call set_cursor_offset
+	jmp .end
+	.not_empty:
+	call kprint_str_offset
+	.end:
+	popa
+	ret
 
 kernel_input:
-	pusha
+	pushad
+
+	; Print out the newline character
+	mov bl, 10
+	call kputchar
+
 	; Test if keybuffer is empty
 	mov edi, KDATA(keybuffer)
 	call strlen
 	test edx, edx
 	jz .end
-
-	; Print out the newline character
-	mov bl, 10
-	call kputchar
 
 	; Check for the "help" command
 	mov eax, KDATA(help_txt)
@@ -114,6 +139,33 @@ kernel_input:
 	jmp .end
 	.dont_clear_cmd:
 
+	; Check for "time" command
+	mov eax, KDATA(.time_txt)
+	call strcmp_lowercase
+	test bl, bl
+	jnz .dont_time_cmd
+
+	.time_cmd:
+	mov eax, DWORD [KDATA(time_tick)]
+	xor edx, edx
+	mov ebx, TIMER_RESOLUTION
+	div ebx
+	mov ecx, edx
+	mov edx, eax
+	call kprint_dec
+	mov edi, KDATA(.time_fmt_s)
+	call kprint_str_offset
+	mov edx, ecx
+	call kprint_dec_offset
+	mov edi, KDATA(.time_fmt_ms)
+	call kprint_str_offset
+	jmp .end
+	.time_fmt_ms:
+	db "ms since startup.",10,0
+	.time_fmt_s:
+	db "s, ",0
+	.dont_time_cmd:
+
 	; Check for "echo" command
 	mov eax, KDATA(.echo_txt)
 	call strcmp_lowercase
@@ -121,16 +173,14 @@ kernel_input:
 	jnz .dont_echo_cmd
 
 	.echo_cmd:
+	call strlen
 	cmp edx, (.echo_txt_end-.echo_txt)
-	ja .enough_echo_args
-	set_video_error
-	mov edi, KDATA(.not_enough_args)
-	call kprint_str
-	jmp .end
-	.enough_echo_args:
-	set_video_attribute(LIGHT_BLUE_FG | BLACK_BG)
+	jle .not_enough_args
+	set_video_attribute(LIGHT_TURQUOISE_FG | BLACK_BG)
 	mov edi, KDATA(keybuffer)+(.echo_txt_end-.echo_txt)
 	call kprint_str
+	mov bl, 10
+	call kputchar_offset
 	jmp .end
 	.dont_echo_cmd:
 
@@ -150,6 +200,7 @@ kernel_input:
 
 	; In case the command is unknown
 	; Print out the command with err msg
+	.unknown_cmd:
 	set_video_error
 	mov edi, KDATA(.unknown_cmd_txt)
 	call kprint_str
@@ -159,6 +210,23 @@ kernel_input:
 	set_video_error
 	mov bl, 34
 	call kputchar_offset
+	mov bl, 10
+	call kputchar_offset
+	jmp .end
+
+	; Not enough args error
+	.not_enough_args:
+	set_video_error
+	mov edi, KDATA(.not_enough_args_txt)
+	call kprint_str
+	jmp .end
+
+	; Invalid args error
+	.invalid_args:
+	set_video_error
+	mov edi, KDATA(.invalid_args_txt)
+	call kprint_str
+
 
 	; Print out the dollar sign to signify new command
 	.end:
@@ -166,21 +234,28 @@ kernel_input:
 	mov edi, KDATA(.new_cmd_txt)
 	call kprint_str
 	set_video_default
-	popa
+	mov WORD [KDATA(input_cursor)], ax
+	popad
 	ret
 
 	; the "data section"
 	.new_cmd_txt:
-	db 10,"$ ",0
+	db "$ ",0
 
 	.unknown_cmd_txt:
 	db "Unknown command ",34,0
 
-	.not_enough_args:
-	db "Not enough args.",0
+	.not_enough_args_txt:
+	db "Not enough args.",10,0
+
+	.invalid_args_txt:
+	db "Invalid args.",10,0
 
 	.clear_txt:
 	db "clear",0
+
+	.time_txt:
+	db "time",0
 
 	.end_txt:
 	db "END",0
