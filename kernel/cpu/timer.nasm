@@ -1,28 +1,20 @@
-%ifndef TIMER_ASM
-%define TIMER_ASM
+%ifndef __CPU_TIMER_NASM
+%define __CPU_TIMER_NASM
 
 %include "kernel/drivers/screen.nasm"
 %include "kernel/cpu/isr.nasm"
 
 time_tick:
-    dd 0
+    dq 0
 
 timer_callback:
-    disable_cursor
-    mov eax, MAX_COLS*6
-    mov edi, KDATA(.text)
-    call kprint_str_offset
-
     mov edx, DWORD [KDATA(time_tick)]
     inc edx
-    call kprint_dec_offset
     mov DWORD [KDATA(time_tick)], edx
-
-    enable_cursor
+    mov edx, DWORD [KDATA(time_tick)+4]
+    adc edx, 0
+    mov DWORD [KDATA(time_tick)+4], edx
     ret
-
-    .text:
-    db "TIMER: ",0
 
 ; ebx - frequency
 init_timer:

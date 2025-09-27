@@ -1,5 +1,5 @@
-%ifndef ISR_ASM
-%define ISR_ASM
+%ifndef __CPU_ISR_NASM
+%define __CPU_ISR_NASM
 
 %include "kernel/drivers/ports.nasm"
 %include "kernel/drivers/screen.nasm"
@@ -47,8 +47,7 @@ isr_setup:
     ret
 
 isr_handler:
-    ; High contrast to see clearly
-    set_video_attribute(LIGHT_RED_FG)
+    set_video_error
 
     ; Print out the isr's data
     mov edi, KDATA(.text)
@@ -68,6 +67,7 @@ isr_handler:
     call kputchar_offset
 
     set_video_default
+
     ret
 
     .text:
@@ -83,7 +83,8 @@ irq_handler:
     .no_eoi:
     port_byte_out 0x20, 0x20
 
-    movzx edi, BYTE [esp+41]
+    movzx edi, BYTE [esp+40]
+    sub edi, 0x20
     mov edx, DWORD [KDATA(irq_callback)+edi*4]
     test edx, edx
     jz .end
@@ -99,6 +100,6 @@ set_irq_handler:
     ret
 
 irq_callback:
-    resd 16
+    times 16 dd 0
 
 %endif

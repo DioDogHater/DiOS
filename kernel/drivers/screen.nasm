@@ -1,5 +1,5 @@
-%ifndef SCREEN_ASM
-%define SCREEN_ASM
+%ifndef __DRIVER_SCREEN_NASM
+%define __DRIVER_SCREEN_NASM
 
 %include "kernel/drivers/ports.nasm"
 
@@ -58,6 +58,7 @@ cursor_enabled:
 
 %define set_video_attribute(x) mov BYTE [KDATA(video_attribute)], (x)
 %define set_video_default set_video_attribute(WHITE_ON_BLACK)
+%define set_video_error set_video_attribute(LIGHT_RED_FG)
 
 %define enable_cursor mov BYTE [KDATA(cursor_enabled)], 0x01
 %define disable_cursor mov BYTE [KDATA(cursor_enabled)], 0x00
@@ -175,7 +176,7 @@ kputchar_at:
 ; bl - char
 kputchar_offset:
 	cmp bl, 10
-	jne .normal_char
+	jne .not_newline
 
 	.newline:
 	add ax, MAX_COLS * 2
@@ -187,6 +188,14 @@ kputchar_offset:
 	mul bx
 	pop dx
 	pop bx
+	jmp .update_cursor
+	.not_newline:
+
+	cmp bl, 8
+	jne .normal_char
+
+	.backspace:
+	dec ax
 	jmp .update_cursor
 
 	.normal_char:

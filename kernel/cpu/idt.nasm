@@ -1,5 +1,5 @@
-%ifndef IDT_TABLE_ASM
-%define IDT_TABLE_ASM
+%ifndef __CPU_IDT_TABLE_NASM
+%define __CPU_IDT_TABLE_NASM
 
 ; interrupt gate handler
 idt_gate_t.low_offset equ 0
@@ -12,7 +12,7 @@ idt_gate_t.high_offset equ 6
 ; equivalent of idt_gate_t idt[IDT_ENTRIES]
 IDT_ENTRIES equ 256
 idt:
-    resq IDT_ENTRIES
+    times IDT_ENTRIES dq 0
 
 ; idt register
 idt_reg:

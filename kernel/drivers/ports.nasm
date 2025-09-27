@@ -1,5 +1,5 @@
-%ifndef PORTS_ASM
-%define PORTS_ASM
+%ifndef __DRIVER_PORTS_NASM
+%define __DRIVER_PORTS_NASM
 
 %macro port_byte_in 1
 	in al, %1

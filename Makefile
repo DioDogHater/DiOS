@@ -7,11 +7,11 @@ all: run
 
 build: build/os-image.bin
 
-build/os-image.bin: boot/boot_sector.nasm kernel/* kernel/drivers/* kernel/cpu/*
+build/os-image.bin: boot/boot_sector.nasm kernel/* kernel/drivers/* kernel/cpu/* stdlib/*
 	nasm $< -f bin -o $@
 
 run: build/os-image.bin
-	qemu-system-i386 -no-reboot -fda $<
+	qemu-system-i386 -m 512 -no-reboot -fda $<
 
 debug: build/os-image.bin
 	qemu-system-i386 -gdb tcp::9000 -S -fda $<

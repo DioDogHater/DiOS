@@ -1,5 +1,5 @@
-%ifndef INTERRUPTS_ASM
-%define INTERRUPTS_ASM
+%ifndef __CPU_INTERRUPTS_NASM
+%define __CPU_INTERRUPTS_NASM
 
 %include "kernel/cpu/isr.nasm"
 

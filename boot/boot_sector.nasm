@@ -118,18 +118,13 @@ init_protected_mode:
 	mov ebp, 0x90000
 	mov esp, ebp
 
-	call boot_protected_mode
+	jmp boot_protected_mode
 
 boot_protected_mode:
 	mov ebx, .text
 	call print_protected_str
 
 	call KERNEL_OFFSET
-
-	; End loop
-	.end_loop:
-	hlt
-	jmp .end_loop
 
 	.text:
 	db "Booted up in protected mode.",0
